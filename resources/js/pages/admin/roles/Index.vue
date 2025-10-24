@@ -10,10 +10,17 @@ import { Badge } from '@/components/ui/badge';
 import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
 import { usePage } from '@inertiajs/vue3';
 
+interface Permission {
+    id: number;
+    name: string;
+    description: string | null;
+}
+
 interface Role {
     id: number;
     name: string;
     description: string | null;
+    permissions: Permission[];
 }
 
 const props = defineProps<{ roles: Role[] }>();
@@ -75,6 +82,7 @@ const breadcrumbs = [
                             <TableRow>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Description</TableHead>
+                                <TableHead>Permissions</TableHead>
                                 <TableHead>Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -82,6 +90,13 @@ const breadcrumbs = [
                             <TableRow v-for="role in roles" :key="role.id">
                                 <TableCell class="font-medium">{{ role.name }}</TableCell>
                                 <TableCell>{{ role.description || '-' }}</TableCell>
+                                <TableCell>
+                                    <div class="flex flex-wrap gap-1">
+                                        <Badge v-for="permission in role.permissions" :key="permission.id" variant="secondary">
+                                            {{ permission.name }}
+                                        </Badge>
+                                    </div>
+                                </TableCell>
                                 <TableCell>
                                     <div class="flex items-center gap-2">
                                         <Button variant="outline" size="sm" as-child>

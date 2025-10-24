@@ -9,12 +9,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Textarea from '@/components/ui/textarea.vue';
 
+interface Permission {
+    id: number;
+    name: string;
+    description: string | null;
+}
+
+const props = defineProps<{ permissions: Permission[] }>();
+
 const form = ref({
     name: '',
     description: '',
+    permissions: [] as number[],
 });
 
 const processing = ref(false);
+
+const togglePermission = (permissionId: number) => {
+    const index = form.value.permissions.indexOf(permissionId);
+    if (index === -1) {
+        form.value.permissions.push(permissionId);
+    } else {
+        form.value.permissions.splice(index, 1);
+    }
+};
 
 const submit = () => {
     processing.value = true;
@@ -78,6 +96,25 @@ const breadcrumbs = [
                                 placeholder="Enter role description" 
                                 rows="3"
                             />
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <Label>Permissions</Label>
+                            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                <div 
+                                    v-for="permission in permissions" 
+                                    :key="permission.id"
+                                    class="flex items-center space-x-2 rounded border p-3"
+                                >
+                                    <input 
+                                        type="checkbox"
+                                        :id="`permission-${permission.id}`"
+                                        :checked="form.permissions.includes(permission.id)"
+                                        @change="togglePermission(permission.id)"
+                                    />
+                                    <Label :for="`permission-${permission.id}`">{{ permission.name }}</Label>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="flex items-center gap-2">

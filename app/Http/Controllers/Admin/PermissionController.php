@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Inertia\Inertia;
 use Inertia\Response;
+use Flasher\Laravel\Facade\Flasher;
 
 class PermissionController extends Controller
 {
@@ -44,8 +45,9 @@ class PermissionController extends Controller
 
         Permission::create($request->only('name', 'description'));
 
-        return redirect()->route('admin.permissions.index')
-            ->with('success', 'Permission created successfully.');
+        Flasher::addSuccess('Permission created successfully.');
+
+        return redirect()->route('admin.permissions.index');
     }
 
     /**
@@ -70,8 +72,9 @@ class PermissionController extends Controller
 
         $permission->update($request->only('name', 'description'));
 
-        return redirect()->route('admin.permissions.index')
-            ->with('success', 'Permission updated successfully.');
+        Flasher::addSuccess('Permission updated successfully.');
+
+        return redirect()->route('admin.permissions.index');
     }
 
     /**
@@ -81,7 +84,8 @@ class PermissionController extends Controller
     {
         $permission->delete();
 
-        return redirect()->route('admin.permissions.index')
-            ->with('success', 'Permission deleted successfully.');
+        Flasher::addSuccess('Permission deleted successfully.');
+
+        return redirect()->route('admin.permissions.index');
     }
 }

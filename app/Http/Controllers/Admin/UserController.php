@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Inertia\Inertia;
 use Inertia\Response;
+use Flasher\Laravel\Facade\Flasher;
 
 class UserController extends Controller
 {
@@ -58,8 +59,9 @@ class UserController extends Controller
             $user->roles()->sync($request->input('roles'));
         }
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User created successfully.');
+        Flasher::addSuccess('User created successfully.');
+
+        return redirect()->route('admin.users.index');
     }
 
     /**
@@ -100,8 +102,9 @@ class UserController extends Controller
             $user->roles()->sync($request->input('roles'));
         }
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User updated successfully.');
+        Flasher::addSuccess('User updated successfully.');
+
+        return redirect()->route('admin.users.index');
     }
 
     /**
@@ -111,13 +114,14 @@ class UserController extends Controller
     {
         // Prevent deleting the current user
         if (Auth::check() && $user->is(Auth::user())) {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'You cannot delete yourself.');
+            Flasher::addError('You cannot delete yourself.');
+            return redirect()->route('admin.users.index');
         }
         
         $user->delete();
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User deleted successfully.');
+        Flasher::addSuccess('User deleted successfully.');
+
+        return redirect()->route('admin.users.index');
     }
 }

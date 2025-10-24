@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Inertia\Inertia;
 use Inertia\Response;
+use Flasher\Laravel\Facade\Flasher;
 
 class RoleController extends Controller
 {
@@ -17,7 +19,7 @@ class RoleController extends Controller
      */
     public function index(): Response
     {
-        $roles = Role::all();
+        $roles = Role::with('permissions')->get();
         
         return Inertia::render('admin/roles/Index', [
             'roles' => $roles,
@@ -29,7 +31,11 @@ class RoleController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('admin/roles/Create');
+        $permissions = Permission::all();
+        
+        return Inertia::render('admin/roles/Create', [
+            'permissions' => $permissions,
+        ]);
     }
 
     /**
@@ -40,12 +46,19 @@ class RoleController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:roles',
             'description' => 'nullable|string',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
-        Role::create($request->only('name', 'description'));
+        $role = Role::create($request->only('name', 'description'));
 
-        return redirect()->route('admin.roles.index')
-            ->with('success', 'Role created successfully.');
+        if ($request->has('permissions')) {
+            $role->permissions()->sync($request->input('permissions'));
+        }
+
+        Flasher::addSuccess('Role created successfully.');
+
+        return redirect()->route('admin.roles.index');
     }
 
     /**
@@ -53,8 +66,12 @@ class RoleController extends Controller
      */
     public function edit(Role $role): Response
     {
+        $role->load('permissions');
+        $permissions = Permission::all();
+        
         return Inertia::render('admin/roles/Edit', [
             'role' => $role,
+            'permissions' => $permissions,
         ]);
     }
 
@@ -66,12 +83,19 @@ class RoleController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
             'description' => 'nullable|string',
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $role->update($request->only('name', 'description'));
 
-        return redirect()->route('admin.roles.index')
-            ->with('success', 'Role updated successfully.');
+        if ($request->has('permissions')) {
+            $role->permissions()->sync($request->input('permissions'));
+        }
+
+        Flasher::addSuccess('Role updated successfully.');
+
+        return redirect()->route('admin.roles.index');
     }
 
     /**
@@ -81,7 +105,8 @@ class RoleController extends Controller
     {
         $role->delete();
 
-        return redirect()->route('admin.roles.index')
-            ->with('success', 'Role deleted successfully.');
+        Flasher::addSuccess('Role deleted successfully.');
+
+        return redirect()->route('admin.roles.index');
     }
 }
